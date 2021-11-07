@@ -4,13 +4,36 @@ import cv2
 import numpy as np
 from gym import Env, spaces
 from numpy import ndarray
+from matplotlib import pyplot as plt
 
-font = cv2.FONT_HERSHEY_COMPLEX_SMALL
+font = cv2.HersheyFonts.FONT_HERSHEY_COMPLEX_SMALL
 
 
 class Motor(object):
-    def __init__(self, max_rpm, induction_time, motor_inertia, motor_torque):
-        pass
+    def __init__(self, max_rpm=1500, motor_moi=20.5, load_moi=41.0, motor_peak_torque=23.3):
+        self.max_rpm = max_rpm
+        self.motor_moi = motor_moi
+        self.load_moi = load_moi
+        self.motor_peak_torque = motor_peak_torque
+        self.rpm = 0
+        self.ms_per_rpm = 2 * math.pi * (self.motor_moi + self.load_moi) / (600 * self.motor_peak_torque)
+
+    def spin(self, ordered_rpm, time, load_torque=0.0, random_torque=False) -> float:
+        load_torque = (np.random.rand() - 0.5) * 0.05 * self.motor_peak_torque if random_torque else load_torque
+        dif_rpm = ordered_rpm - self.rpm
+        transition_time = abs(dif_rpm * self.ms_per_rpm * (1 - load_torque if dif_rpm > 0 else 1 + load_torque))
+        print(f'Time available: {time:.1f} - Time needed: {transition_time:.1f}')
+        if time >= transition_time:
+            transition_rpm = (ordered_rpm + self.rpm) / 2
+            cruising_time = time - transition_time
+            self.rpm = ordered_rpm
+        else:
+            ordered_rpm = self.rpm + dif_rpm * time / transition_time
+            transition_rpm = (ordered_rpm + self.rpm) / 2
+            transition_time = time
+            cruising_time = 0
+            self.rpm = ordered_rpm
+        return transition_rpm * transition_time + ordered_rpm * cruising_time
 
 
 class Point(object):
@@ -58,7 +81,7 @@ class Antenna(Point):
         print(f'ms per rpm: {self.ms_per_rpm}')
         print(f'rpm per second: {1 / self.ms_per_rpm:.1f}')
 
-    def move(self, ordered_speed: ndarray([2])):
+    def move(self, ordered_speed: ndarray):
         if self.min_angle < self.ns < self.max_angle:
             self.ns += self.get_travel(self.ns_speed, ordered_speed[0] * self.max_rpm, 0.1) * math.pi / 180
             self.ns_speed = ordered_speed[0] * self.max_rpm
@@ -165,19 +188,42 @@ class SingleDishAntenna(Env):
             # TODO draw each element in their respective layer
 
 
-A = SingleDishAntenna()
-print(f'Antenna simulator started. Location: {A.antenna.name} [{A.antenna.location}]')
-print(f'Frame rate: {A.refresh_rate}')
-i = 0
-frames = []
-out = cv2.VideoWriter('Antenna.mp4', fourcc=cv2.VideoWriter_fourcc(*'mp4v'), fps=A.refresh_rate, frameSize=(900, 900),
-                      isColor=1)
-while i < 1000:
-    A.step(np.array([1, 1]))
-    frame = A.render(mode='human')
-    if frame is not None:
-        out.write((frame * 255).astype('uint8'))
-    i += 1
-cv2.destroyAllWindows()
-cv2.waitKey(0)
-out.release()
+sgms_13a = Motor(max_rpm=1500, motor_moi=20.5, load_moi=41, motor_peak_torque=23.3)
+ref_motor = Motor(max_rpm=1500, motor_moi=20.5, load_moi=41, motor_peak_torque=23.3)
+rpm_record = []
+ref_record = []
+while sgms_13a.rpm < 1500:
+    sgms_13a.spin(1500, 1, random_torque=True)
+    rpm_record.append(sgms_13a.rpm)
+    print(f'{sgms_13a.rpm:.1f} RPM')
+while sgms_13a.rpm > 0:
+    sgms_13a.spin(0, 1, random_torque=True)
+    rpm_record.append(sgms_13a.rpm)
+    print(f'{sgms_13a.rpm:.1f} RPM')
+while ref_motor.rpm < 1500:
+    ref_motor.spin(1500, 1)
+    ref_record.append(ref_motor.rpm)
+while ref_motor.rpm > 0:
+    ref_motor.spin(0, 1)
+    ref_record.append(ref_motor.rpm)
+plt.plot(rpm_record)
+plt.plot(ref_record)
+plt.show()
+print('Done!')
+
+# A = SingleDishAntenna()
+# print(f'Antenna simulator started. Location: {A.antenna.name} [{A.antenna.location}]')
+# print(f'Frame rate: {A.refresh_rate}')
+# i = 0
+# frames = []
+# out = cv2.VideoWriter('Antenna.mp4', fourcc=cv2.VideoWriter_fourcc(*'mp4v'), fps=A.refresh_rate, frameSize=(900, 900),
+#                       isColor=1)
+# while i < 1000:
+#     A.step(np.array([1, 1]))
+#     frame = A.render(mode='human')
+#     if frame is not None:
+#         out.write((frame * 255).astype('uint8'))
+#     i += 1
+# cv2.destroyAllWindows()
+# cv2.waitKey(0)
+# out.release()
