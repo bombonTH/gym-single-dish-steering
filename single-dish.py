@@ -7,6 +7,7 @@ from gym_single_dish_antenna import SingleDishAntenna
 from motor import Motor
 from point import Point
 from sun import Sun
+import torch
 
 
 def signal_handler(sig, frame):
@@ -52,9 +53,9 @@ sun = Sun(time='2021-08-16 02:00:00')
 A.add_target(sun)
 A.elements.append(Sun(time='2021-08-16 02:00:00'))
 A.antenna.set_ns_motor(Motor(max_rpm=1500, motor_moi=20.5, load_moi=41, motor_peak_torque=23.3),
-                       1 / 6 * 3 / 500 * 16 / 400)
+                       1.0 / 30000)
 A.antenna.set_ew_motor(Motor(max_rpm=1500, motor_moi=20.5, load_moi=41, motor_peak_torque=23.3),
-                       1 / 6 * 4 / 4225 * 16 / 250)
+                       1.0 / 59400)
 print(f'Antenna simulator started. Location: {A.antenna.name} [{A.antenna.location}]')
 print(f'Frame rate: {A.refresh_rate}')
 i = 0
@@ -62,13 +63,13 @@ frames = []
 out = cv2.VideoWriter('Antenna.mp4', fourcc=cv2.VideoWriter_fourcc(*'mp4v'), fps=100,
                       frameSize=(900, 900),
                       isColor=1)
-while i < 10000:
+while i < 1000:
     A.step(A.action_space.sample())
     frame = A.render(mode='human')
-    if i % 100 == 0:
+    if i % 10 == 0:
         print(f'Frame: {i}')
-        #cv2.imshow('Game', frame)
-        #cv2.waitKey(1)
+        cv2.imshow('Game', frame)
+        cv2.waitKey(1)
     if frame is not None:
         out.write((frame * 255).astype('uint8'))
     i += 1

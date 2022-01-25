@@ -30,15 +30,25 @@ class SingleDishAntenna(Env):
         self.antenna.set_position(0, 0)
         self.elements = []
         self.targets = []
+        self.obstacles = []
         self.current_time = current_time
 
     def step(self, action: ndarray):
         # TODO current time, show the elements posit after refresh, update current time.
         self.antenna.move(action, 1000 / self.refresh_rate)
+        reward = 0
         for target in self.targets:
-            target.update(1/self.refresh_rate)
+            target.update(1 / self.refresh_rate)
+            if abs(self.antenna.ns - target.ns) < 0.00001 and abs(self.antenna.ew - target.ew) < 0.00001:
+                print('hit')
+                reward += 1
+        for obstacle in self.obstacles:
+            obstacle.update(1 / self.refresh_rate)
+            if abs(self.antenna.ns - obstacle.ns) < 0.00001 and abs(self.antenna.ew - obstacle.ew) < 0.00001:
+                print('hit')
+                reward -= 10
+
         self.render(mode='rgb_array')
-        reward = None  # TODO negative reward if max angle is surpassed. preferably call another function.
         done = False
         return self.canvas, reward, done
 
@@ -63,8 +73,8 @@ class SingleDishAntenna(Env):
         if mode == 'human':
             self.draw_overlay()
             hud = cv2.add(self.canvas, self.overlay)
-            #cv2.imshow('Game', hud)
-            #cv2.waitKey(1)
+            # cv2.imshow('Game', hud)
+            # cv2.waitKey(1)
             # cv2.waitKey(int(1000 / self.refresh_rate))
             return hud
         return self.canvas
