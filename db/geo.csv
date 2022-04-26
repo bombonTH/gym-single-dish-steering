@@ -1,0 +1,95 @@
+satellite,azimuth,elevation,radius
+BRIsat,101.4,31.6,2
+JCSat6,101.6,32.1,2
+Measat2,102.3,34.1,2
+Asiasat 3S,103.2,36,2
+Express A4,103.6,37.1,2
+NBN-Co 1B,103.7,37.3,2
+Superbird C2,104.1,38.2,2
+Inmarsat-4F1,104.4,38.7,2
+BGAN I-4 Asia-Pacific,104.4,38.7,2
+Kizuna,104.6,39.3,2
+APSTAR 9,105.1,40.3,2
+JMA Himawari 8/9,105.8,41.7,2
+"Express AM5/AT2,NBN-Co 1A",106.2,42.4,2
+Telstar 18,107.3,44.5,2
+N-Star-C,108.5,46.5,2
+APSTAR 6,109.8,48.6,2
+"JCSat 5A,Vinasat",111.3,50.7,2
+Vinasat 2,111.5,50.9,2
+LAOSat 1,114.2,54.2,2
+COMS 1,114.5,54.5,2
+Jcsat 3A/RA,114.7,54.7,2
+APSTAR 9A,117.2,57.2,2
+ChinaSat 6A,117.7,57.7,2
+JCSat 4B,118.8,58.7,2
+Asiasat 9 ,121.9,61,2
+Asiasat 6,124.1,62.5,2
+Thaicom 4 ,124.9,63,2
+Telkom 3S,127.3,64.4,2
+ABS-7,130.8,66,2
+Koreasat 6,131,66.1,2
+Koreasat 7,131.2,66.2,2
+ChainaSat 6B,132,66.5,2
+Astra 2A,136.3,68.1,2
+"Koreasat 5/5A,Palapa D",137.5,68.5,2
+ChainaSat 10/16,144,70.3,2
+"Bsat 3C/4a,JCS 15,N-SAT-110",145.5,70.7,2
+Bsat 3A,146.4,70.8,2
+Bsat 3B,146.7,70.9,2
+SES 9,151.7,71.8,2
+SES 7,152.7,72,2
+Asiasat 7 ,160.7,73,2
+Asiastar 1,162.6,73.2,2
+Express AM3,170.6,73.7,2
+ChinaSat 9A,177.3,73.9,2
+AsiaSat 5,181.1,73.9,2
+Thuraya 3,189.4,73.7,2
+Chinasat 11,191.5,73.6,2
+Express AM33,197.4,73.2,2
+Skynet 5A,202.3,72.7,2
+"Luch 5V,NSS 6, SES 8",203,72.6,2
+"Insat 3C,GSAT 15",208.3,71.8,2
+ChinaSat 9,212.4,71.1,2
+Measat 3/3A/3B,214.5,70.7,2
+Yamal 401,218.7,69.6,2
+Nimiq 2,220,69.3,2
+ST 2,223.7,68.1,2
+Chinasat 12,224.9,67.8,2
+Kazsat 2 ,227,66.9,2
+Intelsat 15,229.6,65.8,2
+Horizons 2,230,65.7,2
+"GSAT 6/10/12,Insat 4A",233.5,63.9,2
+Express AM22,237.9,61.2,2
+Express AM22,238,61.1,2
+Thaicom 5/6/8,240,59.7,2
+APSTAR 7,242.3,57.7,2
+ABS-2/2A,243.9,56.2,2
+GSAT 7/14/18,244.8,55.2,2
+Intelsat 22,246.6,53.3,2
+Eutelsat 70B,247.9,5.7,2
+Intelsat 20/36,249.4,49.6,2
+Intelsat 17,251.2,47.1,2
+Amos 4,251.8,46,2
+Inmarsat-3F1,252.1,45.5,2
+Intelsat 906,252.3,45.2,2
+Intelsat 26,252.4,45.1,2
+Intelsat-4F2,252.4,45,2
+Inmarsat-5F1,253,43.9,2
+Intelsat 902,253.6,42.9,2
+ABS-4,254.1,41.9,2
+Astra 2C,254.5,41.1,2
+Astra 2D,254.7,40.6,2
+Kazsat 3 ,255.4,39.3,2
+NSS 12,256.1,37.7,2
+Express AT1,256.6,36.7,2
+GSAT 8/16,257,35.6,2
+Yamal 402,257.1,35.5,2
+Express AM6,257.9,33.5,2
+Skynet 5D,258,33.2,2
+Yahlive,258.1,33,2
+TurkmenAlem,258.3,32.5,2
+BELINTERSAT-1,258.5,32,2
+Astra 1G,258.6,31.7,2
+NSS 5,258.9,31,2
+Tursat 4B,259.1,30.4,2

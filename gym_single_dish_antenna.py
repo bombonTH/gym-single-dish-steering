@@ -8,6 +8,8 @@ from numpy import ndarray
 from antenna import Antenna
 from point import Point
 
+from gym.envs.registration import register
+
 
 class SingleDishAntenna(Env):
     def __init__(self, refresh_rate=1, current_time=0):
@@ -48,39 +50,42 @@ class SingleDishAntenna(Env):
 
         for obstacle in self.obstacles:
             obstacle.update(1 / self.refresh_rate)
-        self.antenna.obstructed = self.check_obstructed(0.1)
 
         for target in self.targets:
             target.update(1 / self.refresh_rate)
-            target.out_of_bound = not(-math.pi/3 < target.ns < math.pi/3 and -math.pi/3 < target.ew < math.pi/3)
+            target.out_of_bound = not (
+                    -math.pi / 3 < target.ns < math.pi / 3 and -math.pi / 3 < target.ew < math.pi / 3)
 
-            if not (self.antenna.obstructed and target.done and target.out_of_bound):
+            if not (target.obstructed or target.done or target.out_of_bound):
                 current_reward = self.calculate_reward(target)
-                if current_reward > 0.9: print(f'Reward: {current_reward:.2f}')
-                target.done = target.hit >= 120
-                reward += current_reward
+                target.done = target.hit >= 5
+                if target.hit > 0:
+                    reward += 10
+                    print(f'Hit: {target.hit} times')
+                reward += current_reward * 0
+                reward += (100 if target.done else 0)
 
-        reward -= self.calculate_penalty(action) / 100
-        reward -= 0.001
-        #print(f'Time penalty: {self.episode_length * 0.001:.3f}')
-        #print(f'Penalty for action: {self.calculate_penalty(action) / 50:.3f}')
+        reward -= self.calculate_penalty(action) / 10
+        # reward -= 0.001
+        # print(f'Time penalty: {self.episode_length * 0.001:.3f}')
+        # print(f'Penalty for action: {self.calculate_penalty(action) / 10:.2f}')
         done = all(target.out_of_bound or target.done for target in self.targets)
+        reward += (1000 if all(target.done for target in self.targets) else 0)
         self.last_action = action
         self.render(mode='rgb_array')
-        return self.canvas, reward, done, {}
 
-    def check_obstructed(self, distance=0.1):
-        ant_position = self.antenna.get_position()
-        return any([math.dist(ant_position, obs.get_position()) < distance for obs in self.obstacles])
+        return self.canvas, reward, done, {}
 
     def calculate_reward(self, target: Point):
         distance = math.dist(self.antenna.get_position(), target.get_position())
-        target.hit += 1 if distance < 0.01 else 0
-        return 1 - np.tanh(distance*5)
+        target.hit = (target.hit + 1 if distance < 0.01 else 0)
+        return 1 - np.tanh(distance * 90)
 
     def calculate_penalty(self, action):
-        penalty = abs(action[0] - self.last_action[0]) + abs(action[1] - self.last_action[1])
-        return penalty
+        penalty_0 = abs(action[0] - self.last_action[0]) if abs(action[0] - self.last_action[0]) > 1 else 0
+        penalty_1 = abs(action[1] - self.last_action[1]) if abs(action[1] - self.last_action[1]) > 1 else 0
+        penalty = penalty_0 + penalty_1
+        return penalty * 0
 
     def add_target(self, target: Point):
         self.targets.append(target)
@@ -122,10 +127,17 @@ class SingleDishAntenna(Env):
     def draw(self):
         self.canvas = (np.zeros(self.observation_shape) * 1).astype('uint8')
         self.antenna.draw(self.canvas)
-        for target in self.targets:
-            target.draw(self.canvas)
+        self.draw_speed_bar()
+
         for obstacle in self.obstacles:
             obstacle.draw(self.canvas)
+            if obstacle.get_distance(self.antenna) < math.pi / 18:
+                self.draw_bar(obstacle)
+
+        for target in self.targets:
+            target.draw(self.canvas)
+            if target.get_distance(self.antenna) < math.pi / 18:
+                self.draw_bar(target)
 
     def draw_overlay(self):
         self.overlay = (np.zeros(self.observation_shape) * 1).astype('uint8')
@@ -135,3 +147,49 @@ class SingleDishAntenna(Env):
         for index, target in enumerate(self.targets):
             self.overlay = cv2.putText(self.overlay, target.get_status(), (10, (index + 2) * 20), self.font, 0.5,
                                        (255, 255, 255), 1, cv2.LINE_AA)
+
+    def draw_speed_bar(self):
+        canvas = self.canvas[:, :, 0]
+        h = self.canvas.shape[0]
+        w = self.canvas.shape[1]
+        # y = math.floor(-self.antenna.ns_speed / 0.012 * h + h / 2)
+        # x = math.floor(self.antenna.ew_speed / 0.012 * w + w / 2)
+        y = math.floor(-self.last_action[0] * 40)
+        x = math.floor(self.last_action[1] * 40)
+        canvas[0, x] = canvas[0, x + 1] = 255
+        canvas[y, 0] = canvas[y + 1, 0] = 255
+
+    def draw_bar(self, point: Point):
+        canvas = self.canvas[:, :, point.layer]
+        bar_lim = 4 * math.pi / 180  # 4 degrees
+        amp_factor = math.pi / bar_lim
+        radius = point.radius
+        h = self.canvas.shape[0]
+        w = self.canvas.shape[1]
+        x = math.floor((point.ew - self.antenna.ew) / bar_lim * w - 0.5 + w / 2)
+        y = math.floor((self.antenna.ns - point.ns) / bar_lim * h - 0.5 + h / 2)
+        # if 0 < y < h - 1:
+        #     canvas[y, w - 1] = canvas[y + 1, w - 1] = 255
+        # if 0 < x < w - 1:
+        #     canvas[h - 1, x] = canvas[h - 1, x + 1] = 255
+        for k in range(max(0, math.floor(y - radius)), min(h, math.ceil(y + radius))):
+            distance = math.dist((k, x), (y, x))
+            pixel = int(192 * (1 - distance / radius)) if distance < radius else 0
+            pixel = min(pixel, 255 - canvas[k, w - 1])
+            canvas[k, w - 1] = pixel + canvas[k, w - 1]
+        for j in range(max(0, math.floor(x - radius)), min(w, math.ceil(x + radius))):
+            distance = math.dist((y, j), (y, x))
+            pixel = int(192 * (1 - distance / radius)) if distance < radius else 0
+            pixel = min(pixel, 255 - canvas[h - 1, j])
+            canvas[h - 1, j] = pixel + canvas[h - 1, j]
+
+
+register(
+    # unique identifier for the env `name-version`
+    id="SingleDish-v1",
+    # path to the class for creating the env
+    # Note: entry_point also accept a class as input (and not only a string)
+    entry_point=SingleDishAntenna,
+    # Max number of steps per episode, using a `TimeLimitWrapper`
+    max_episode_steps=1800,
+)

@@ -13,7 +13,7 @@ class Motor(object):
         self.ms_per_rpm = 2 * math.pi * (self.motor_moi + self.load_moi) / (600 * self.motor_peak_torque)
 
     def spin(self, ordered_rpm, time, load_torque=0.0, random_torque=False) -> float:
-        load_torque = (np.random.rand() - 0.5) * 0.05 * self.motor_peak_torque if random_torque else load_torque
+        load_torque = (np.random.rand() - 0.5) * 0.3 * self.motor_peak_torque if random_torque else load_torque
         dif_rpm = ordered_rpm - self.rpm
         transition_time = abs(dif_rpm * self.ms_per_rpm * (1 - load_torque if dif_rpm > 0 else 1 + load_torque))
         if time >= transition_time:

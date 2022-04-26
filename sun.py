@@ -6,6 +6,7 @@ from astropy.coordinates import EarthLocation, AltAz, get_sun
 from astropy.time import Time, TimeDelta
 from point import Point
 import numpy as np
+import coordinate
 
 
 class Sun(Point):
@@ -18,18 +19,21 @@ class Sun(Point):
         self.location = EarthLocation(lat=location[0] * u.deg, lon=location[1] * u.deg, height=location[2] * u.m)
         self.init_time = time
         self.time = Time(time)
-        self.draw_boundary = math.pi / 2
-        self.az = 0
-        self.elv = 0
+
         self.frame = AltAz(obstime=self.time, location=self.location)
-        self.hit = 0
 
         self.update(0)
+    
+    def step(self, time):
+        self.time += time * u.second
+        self.frame = AltAz(obstime=self.time, location=self.location)
+        return self.get_sun_position()
+        
 
     def reset(self, random=False):
         self.set_time(self.init_time)
         if random:
-            self.time = self.time + int(np.random.uniform(-21600, 21600))* u.second
+            self.time = self.time + int(np.random.uniform(-21600, 21600)) * u.second
         self.hit = 0
         self.done = False
 
@@ -40,13 +44,25 @@ class Sun(Point):
         self.cursor = self.connection.cursor()
         time = str(self.time)
         sun_position = self.read_sun(time)
+
         if sun_position is None:
             print('Not found - calculating position')
-            self.az, self.elv, self.ns, self.ew = self.cal_sun(self.time)
-            self.write_sun(time, self.az, self.elv, self.ns, self.ew)
+            az, alt = self.cal_sun(self.time)
+            self.elaz = coordinate.ElAz(el=alt, az=az)
+            self.xy = self.elaz.to_xy()
+            y = self.xy.y
+            x = self.xy.x
+            az = self.elaz.az
+            elv = self.elaz.el            
+            self.write_sun(time, az, elv, y, x)
+            sun_position = (time, az, elv, y, x)
         else:
-            time, self.az, self.elv, self.ns, self.ew = sun_position
+            time, az, elv, y, x = sun_position 
+            self.elaz = coordinate.ElAz(el=math.degrees(elv), az = math.degrees(az))
+            self.xy = self.elaz.to_xy()
+
         self.cursor.close()
+        return self.elaz, self.xy
 
     def read_sun(self, time):
         self.cursor.execute("SELECT * FROM sun WHERE time = ?", (time,))
@@ -55,22 +71,13 @@ class Sun(Point):
     def cal_sun(self, time):
         sun = get_sun(time).transform_to(self.frame)
         az = sun.az.hour * 15
-        elv = sun.alt.hour * 15
-        elevation = math.pi / 2 - elv / 180 * math.pi
-        azimuth = az / 180 * math.pi
-        ns = elevation * math.cos(azimuth)
-        ew = elevation * math.sin(azimuth)
-        return az, elv, ns, ew
+        alt = sun.alt.hour * 15
+        return az, alt
 
     def write_sun(self, time, az, elv, ns, ew):
         self.cursor.execute("INSERT INTO sun VALUES (?, ?, ?, ?, ?)",
                             (time, az, elv, ns, ew))
         self.connection.commit()
 
-    def update(self, time):
-        self.time += time * u.second
-        self.frame = AltAz(obstime=self.time, location=self.location)
-        self.get_sun_position()
-
     def get_status(self) -> str:
-        return f'SUN - Az: {self.az:06.2f} - Elv: {self.elv:05.2f} - Time: {self.time.to_datetime()} UT'
+        return f'SUN - Az: {self.azimuth:06.2f} - Elv: {self.elevation:05.2f} - Time: {self.time.to_datetime()} UT'
