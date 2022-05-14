@@ -10,8 +10,8 @@ import coordinate
 
 
 class Sun(Point):
-    def __init__(self, name: str = 'sun', location=(13.7309711, 100.7873937, 15.0), time=0, radius=2, layer=1):
-        super(Sun, self).__init__(name=name, layer=layer, location=location, radius=radius)
+    def __init__(self, name: str = 'sun', location=(13.7309711, 100.7873937, 15.0), time=0, radius=2, layer=1, dwell=10):
+        super(Sun, self).__init__(name=name, layer=layer, location=location, radius=radius, dwell=dwell)
 
         self.connection = sqlite3.connect("db/sun.db")
         self.cursor = self.connection.cursor()
@@ -33,7 +33,7 @@ class Sun(Point):
     def reset(self, random=False):
         self.set_time(self.init_time)
         if random:
-            self.time = self.time + int(np.random.uniform(-21600, 21600)) * u.second
+            self.time = self.time + int(np.random.uniform(-14400, 14400)) * u.second
         self.hit = 0
         self.done = False
 
