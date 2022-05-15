@@ -103,9 +103,9 @@ class SingleDishAntenna(Env):
         self.episode_length = 0
         self.antenna.reset(random=exploration_start)
         for target in self.targets:
-            target.reset(random=exploration_start)
+            target.reset()
         for obstacle in self.obstacles:
-            obstacle.reset(random=exploration_start)
+            obstacle.reset()
         self.draw()
         return self.canvas
 

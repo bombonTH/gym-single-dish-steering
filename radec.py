@@ -35,6 +35,9 @@ class RaDec(Point):
         if random:
             ra = self.ra + np.random.uniform(-60, 60)
             dec = min(max(self.dec + np.random.uniform(-60, 60), -60), 60)
+        else:
+            ra = self.ra
+            dec = self.dec
         self.skycoord = SkyCoord(ra=ra * u.deg, dec=dec * u.deg, frame='icrs')
         self.hit = 0
         self.done = False

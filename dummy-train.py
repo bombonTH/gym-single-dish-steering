@@ -27,8 +27,6 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-sgms_13a = Motor(max_rpm=1500, motor_moi=20.5, load_moi=41, motor_peak_torque=23.3)
-
 
 def make_env(_env_id, rank, seed=0):
     """
@@ -43,7 +41,7 @@ def make_env(_env_id, rank, seed=0):
         _env = gym.make(_env_id, random_start=True, random_torque=True)
         #_env.add_target(Sun(time='2021-08-16 05:00:00', dwell=np.random.randint(0, 20), layer=1, radius=2))
         _env.add_target(RaDec(time='2021-08-16 05:00:00', dwell=np.random.randint(1, 20), layer=1, radius=2,ra=140,dec=10))
-        #_env.add_target(RaDec(time='2021-08-16 05:00:00', dwell=np.random.randint(0, 20), layer=1, radius=2,ra=140,dec=10))
+        _env.add_target(RaDec(time='2021-08-16 05:00:00', dwell=np.random.randint(1, 20), layer=1, radius=2,ra=140,dec=10))
         #_env.add_target(RaDec(time='2021-08-16 05:00:00', dwell=np.random.randint(0, 20), layer=1, radius=2,ra=140,dec=10))
         #_env.add_target(RaDec(time='2021-08-16 05:00:00', dwell=np.random.randint(0, 20), layer=1, radius=2,ra=140,dec=10))
         #_env.add_target(RaDec(time='2021-08-16 05:00:00', dwell=np.random.randint(0, 20), layer=1, radius=2,ra=140,dec=10))
@@ -58,12 +56,7 @@ def make_env(_env_id, rank, seed=0):
         #_env.add_obstacle(Airplane(antenna=(13.7309711, 100.7873937, 0.07), time='2021-08-16 05:00:00'))
         #_env.obstacles[-1].set_location(location=(13.7309711, 100.7873937, 34000 / 3280.84), track=5, speed=300).reset(
         #    random=True)
-        _env.antenna.set_y_motor(Motor(max_rpm=1500, motor_moi=20.5, load_moi=41, motor_peak_torque=23.3),
-                                  1.0 / 30000)
-        _env.antenna.set_x_motor(Motor(max_rpm=1500, motor_moi=20.5, load_moi=41, motor_peak_torque=23.3),
-                                  1.0 / 59400)
         return _env
-
     return _init
 
 
@@ -83,31 +76,27 @@ if __name__ == '__main__':
                 learning_rate=3e-4, clip_range=0.2, vf_coef=0.5, ent_coef=0.01,
                 tensorboard_log="./ppo_tensorboard/dummy/", policy_kwargs=policy_kwargs)
     #model.load('4e6.zip', print_system_info=True)
-    model.set_parameters('d24e6')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
-    model.save('d25e6.zip')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
-    model.save('d26e6.zip')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
-    model.save('d27e6.zip')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
-    model.save('d28e6.zip')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
-    model.save('d29e6.zip')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
+    #model.set_parameters('d45e6')
+    model.learn(total_timesteps=float(10e6), reset_num_timesteps=False)
+    model.save('d10e6.zip')
+    model.learn(total_timesteps=float(10e6), reset_num_timesteps=False)
+    model.save('d20e6.zip')
+    model.learn(total_timesteps=float(10e6), reset_num_timesteps=False)
     model.save('d30e6.zip')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
-    model.save('d31e6.zip')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
-    model.save('d32e6.zip')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
-    model.save('d33e6.zip')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
-    model.save('d34e6.zip')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
-    model.save('d35e6.zip')
-    model.learn(total_timesteps=float(1e6), reset_num_timesteps=False)
-    model.save('d36e6.zip')
+    model.learn(total_timesteps=float(10e6), reset_num_timesteps=False)
+    model.save('d40e6.zip')
+    model.learn(total_timesteps=float(10e6), reset_num_timesteps=False)
+    model.save('d50e6.zip')
+    model.learn(total_timesteps=float(10e6), reset_num_timesteps=False)
+    model.save('d60e6.zip')
+    model.learn(total_timesteps=float(10e6), reset_num_timesteps=False)
+    model.save('d70e6.zip')
+    model.learn(total_timesteps=float(10e6), reset_num_timesteps=False)
+    model.save('d80e6.zip')
+    model.learn(total_timesteps=float(10e6), reset_num_timesteps=False)
+    model.save('d90e6.zip')
+    model.learn(total_timesteps=float(10e6), reset_num_timesteps=False)
+    model.save('d100e6.zip')
 
 
     print('Done!')
